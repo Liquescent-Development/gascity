@@ -8,9 +8,10 @@ conversation — and you want to see what changes when an orchestrator runs
 *many* agents for you.
 
 **Time:** 30–45 minutes. **Prerequisite:** the tutorial container is running
-(see `contrib/docker/README.md`) and you have Claude authentication (an
-`ANTHROPIC_API_KEY` in the environment, or run `claude` once inside the
-container and log in).
+(see `contrib/docker/README.md`) and you have first-party Claude Code
+authentication — run `claude` once inside the container and log in, or set
+`CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token`. (An `ANTHROPIC_API_KEY`
+does not satisfy gc's provider readiness check.)
 
 > **Prefer a guided ride?** `/opt/gascity-tutorials/01-your-first-fleet.sh`
 > runs this same tutorial interactively — it explains each step, shows you
@@ -64,10 +65,10 @@ Inside the container:
 gc version && claude --version && bd version && dolt version && tmux -V
 ```
 
-> ✅ **Checkpoint:** five version lines, no errors. If `claude` complains
-> about authentication later, run `claude` once and log in (credentials
-> persist in the volume), or restart the container with `ANTHROPIC_API_KEY`
-> set.
+> ✅ **Checkpoint:** five version lines, no errors. If `gc init` reports
+> "needs authentication" later, run `claude` once and log in (credentials
+> persist in the volume), or restart the container with
+> `CLAUDE_CODE_OAUTH_TOKEN` set from `claude setup-token`.
 
 ## Step 1 — Found a city
 

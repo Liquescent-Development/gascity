@@ -16,8 +16,10 @@ pause
 heading "Step 0 — Check the environment"
 require_bin gc claude bd dolt tmux git python3
 run "gc version && claude --version && bd version | head -1 && dolt version && tmux -V"
-say "If Claude auth isn't set up yet (no ANTHROPIC_API_KEY), run 'claude'" \
-    "once in another terminal and log in — credentials persist in the volume."
+say "If Claude auth isn't set up yet, run 'claude' once in another terminal" \
+    "and log in (or set CLAUDE_CODE_OAUTH_TOKEN from 'claude setup-token')." \
+    "gc's readiness check needs first-party Claude Code auth — an" \
+    "ANTHROPIC_API_KEY won't satisfy it. Credentials persist in the volume."
 pause
 
 heading "Step 1 — Found a city"
