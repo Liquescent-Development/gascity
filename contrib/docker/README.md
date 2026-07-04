@@ -10,16 +10,26 @@ the backing agent**: the `gc` orchestrator (built from this repo's source),
 
 ```bash
 cd contrib/docker
-
-# Optional but easiest: API-key auth for the agents.
-export ANTHROPIC_API_KEY=sk-ant-...
-
 docker compose up -d --build     # first build compiles gc — takes a few minutes
 docker compose exec gascity bash
 ```
 
-No API key? Run `claude` once inside the container and log in interactively;
-credentials persist in the `gc-home` volume.
+### Authentication (pick one, before running `gc init`)
+
+- **API key:** `export ANTHROPIC_API_KEY=sk-ant-...` before `docker compose
+  up`; the compose file forwards it to agent sessions.
+- **Claude subscription (Pro/Max), interactive:** run `claude` once inside
+  the container and `/login` with your Claude account — the headless flow
+  prints a URL to open in your host browser and a code to paste back.
+  Credentials persist in the `gc-home` volume, so this is one-time.
+- **Claude subscription, token:** on a host where you're already logged in,
+  run `claude setup-token` to mint a long-lived OAuth token, then
+  `export CLAUDE_CODE_OAUTH_TOKEN=<token>` before `docker compose up`.
+
+Set only one — an `ANTHROPIC_API_KEY` in the environment takes precedence
+over subscription credentials. Note that subscription usage limits are
+shared with your interactive Claude Code use, and formula fan-outs run
+several sessions concurrently.
 
 Then, inside the container:
 

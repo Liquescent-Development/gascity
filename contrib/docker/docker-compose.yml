@@ -5,10 +5,12 @@
 #   docker compose up -d --build
 #   docker compose exec gascity bash
 #
-# Authentication (pick one):
+# Authentication (pick one; see README.md "Authentication"):
 #   - export ANTHROPIC_API_KEY=sk-ant-... before `docker compose up`, or
-#   - run `claude` once inside the container and log in interactively;
-#     credentials persist in the gc-home volume.
+#   - Claude subscription (Pro/Max): run `claude` once inside the container
+#     and log in interactively; credentials persist in the gc-home volume, or
+#   - Claude subscription: `claude setup-token` on your host, then
+#     export CLAUDE_CODE_OAUTH_TOKEN=<token> before `docker compose up`.
 services:
   gascity:
     build:
