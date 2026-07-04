@@ -42,8 +42,9 @@ pause
 heading "Step 2 — Register a rig"
 say "Work happens in a rig — an external project, usually a git repo," \
     "registered with the city. It gets its own bead-ID namespace."
-run "mkdir -p '$RIG' && cd '$RIG' && git init -b main 2>/dev/null; true"
-run "gc rig add '$RIG'"
+run "mkdir -p '$RIG' && git -C '$RIG' init -b main"
+# gc rig add resolves the city from the current directory — run it from the city.
+run "cd '$CITY' && gc rig add '$RIG'"
 run "gc rig list"
 pause
 

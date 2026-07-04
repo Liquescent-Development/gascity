@@ -38,8 +38,9 @@ run() {
     q) echo "Leaving the tutorial. Re-run this script to pick up where you left off."; exit 0 ;;
     s) echo "${YELLOW}skipped${RESET}"; return 0 ;;
   esac
-  if ! eval "$cmd"; then
-    local status=$?
+  local status=0
+  eval "$cmd" || status=$?
+  if [ "$status" -ne 0 ]; then
     printf '%scommand failed (exit %s)%s\n' "$YELLOW" "$status" "$RESET"
     read -rp "${DIM}[Enter=continue the tutorial anyway  q=quit]${RESET} " answer </dev/tty
     [ "$answer" = "q" ] && exit 1

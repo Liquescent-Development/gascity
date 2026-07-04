@@ -117,8 +117,8 @@ one and register it:
 
 ```bash
 mkdir -p ~/projects/greetbot
-cd ~/projects/greetbot
-git init -b main
+git -C ~/projects/greetbot init -b main
+cd ~/cities/tutorial            # gc rig add resolves the city from the cwd
 gc rig add ~/projects/greetbot
 gc rig list
 ```
