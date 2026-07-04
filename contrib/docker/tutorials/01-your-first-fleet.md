@@ -325,11 +325,17 @@ else is blocked on it). The instant it closes, **three steps become ready at
 once** and the pool scales to meet them. Watch from several angles:
 
 ```bash
-gc session list        # run repeatedly: 1 worker session → then 3, concurrently
+gc session list        # run repeatedly: watch the worker count breathe up and down
 gc bd list             # step beads: in_progress in parallel, blocked ones invisible-to-agents
 gc bd show <root-id> --watch      # root bead from the sling output; closes when all steps do
-gc session peek greetbot/worker-1 # what a worker is typing right now (any TARGET from session list)
+gc session peek <id-or-target>    # what a worker is typing right now (use a live ID from session list)
 ```
+
+Timing expectations: the orchestrator dispatches on its tick, and every step
+is a real Claude session writing real code, so the full run takes 10–20
+minutes. The session count fluctuates by design — instances retire when
+their step closes and respawn as new steps become ready, so you may catch
+three workers or one depending on when you look.
 
 Look at `gc session list`'s `WORKDIR` column while the fleet runs: each
 session works in its own isolated checkout under the rig, named for the step

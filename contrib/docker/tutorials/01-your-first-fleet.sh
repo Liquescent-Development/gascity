@@ -64,9 +64,15 @@ say "The watch below streams the bead live and never exits on its own —" \
     "return to the tutorial."
 watch "gc bd show $BEAD --watch"
 run "gc session list"
-say "Sessions are numbered instances of the agent (greetbot/claude-1) —" \
-    "peek any TARGET or ID from the list above."
-run "gc session peek greetbot/claude-1 || true"
+say "Sessions are numbered instances of the agent (greetbot/claude-1)." \
+    "Instances come and go as work does — peek by a live TARGET or ID."
+CLAUDE_SESSION="$(gc session list 2>/dev/null | awk '$2=="greetbot/claude"{print $1; exit}')"
+if [ -n "$CLAUDE_SESSION" ]; then
+  run "gc session peek $CLAUDE_SESSION || true"
+else
+  say "No greetbot/claude session is live right now (it may have already" \
+      "finished and been retired) — nothing to peek."
+fi
 say "When the bead closes: the task was durable state in a store, the" \
     "session observable from outside. Had the agent crashed, the bead would" \
     "have stayed open for the next one."
@@ -190,8 +196,11 @@ fi
 pause
 
 heading "Step 7 — Watch the fan-out"
-say "scaffold runs first; the instant it closes, THREE steps become ready at" \
-    "once and the pool scales to meet them. Cycle these views — and the" \
+say "scaffold runs first; when it closes, up to THREE steps become ready at" \
+    "once and the pool scales to meet them. The orchestrator dispatches on" \
+    "its tick and each step is a real Claude session doing real work, so" \
+    "expect the whole run to take 10-20 minutes — and the session count to" \
+    "breathe up and down as steps finish. Cycle these views — and the" \
     "dashboard at http://localhost:8372/ — until the root closes. Watches" \
     "stream forever; Ctrl-C returns to the tutorial:"
 watch "gc bd show $ROOT --watch"
@@ -201,9 +210,15 @@ say "Note the WORKDIR column: each session works in its own isolated" \
     "back when the step closes. That's why three agents can commit" \
     "concurrently without trampling each other."
 run "cd '$RIG' && gc bd list | head -30"
-run "gc session peek greetbot/worker-1 || true"
-say "To look over an agent's shoulder in full: gc session attach" \
-    "greetbot/worker-1 (detach with Ctrl-b then d — never Ctrl-c)."
+WORKER_SESSION="$(gc session list 2>/dev/null | awk '$2=="greetbot/worker"{print $1; exit}')"
+if [ -n "$WORKER_SESSION" ]; then
+  run "gc session peek $WORKER_SESSION || true"
+else
+  say "No worker session is live at this instant — the pool scales with" \
+      "ready work; re-run gc session list in a moment."
+fi
+say "To look over an agent's shoulder in full: gc session attach <ID or" \
+    "TARGET from gc session list> (detach with Ctrl-b then d — never Ctrl-c)."
 say "Step 8 only makes sense once the whole workflow is done. This wait" \
     "blocks until the root bead closes — typically several minutes. Ctrl-C" \
     "returns to the tutorial if you'd rather keep exploring the views above" \
