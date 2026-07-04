@@ -219,10 +219,17 @@ else
 fi
 say "To look over an agent's shoulder in full: gc session attach <ID or" \
     "TARGET from gc session list> (detach with Ctrl-b then d — never Ctrl-c)."
+say "Why so slow for a trivial app? Each step pays fixed overhead — a" \
+    "dispatch tick, a fresh session, an isolated checkout, a merge back —" \
+    "regardless of step size. A lone interactive Claude session would beat" \
+    "this fleet here. The price is right when steps are real engineering" \
+    "work, fan-outs are wide, and runs happen outside your session; the" \
+    "tutorial shrinks the app so the machinery is watchable, which lets the" \
+    "overhead dominate. Progress check anytime: gc events --since 10m"
 say "Step 8 only makes sense once the whole workflow is done. This wait" \
-    "blocks until the root bead closes — typically several minutes. Ctrl-C" \
-    "returns to the tutorial if you'd rather keep exploring the views above" \
-    "and re-run the runner later."
+    "blocks until the root bead closes — typically several more minutes." \
+    "Ctrl-C returns to the tutorial if you'd rather keep exploring the views" \
+    "above and re-run the runner later."
 watch "until gc bd show $ROOT | head -1 | grep -q CLOSED; do sleep 10; done; echo '=== workflow root $ROOT is CLOSED ==='"
 pause
 

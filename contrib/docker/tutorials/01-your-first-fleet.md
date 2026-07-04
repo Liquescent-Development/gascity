@@ -337,6 +337,17 @@ minutes. The session count fluctuates by design — instances retire when
 their step closes and respawn as new steps become ready, so you may catch
 three workers or one depending on when you look.
 
+**"Ten minutes for a trivial app?"** Yes — and a single interactive Claude
+Code session would beat this fleet by most of those minutes. Each step pays
+a fixed overhead (a dispatch tick, a fresh session, an isolated checkout, a
+merge back) that has nothing to do with how big the step is. That price is
+wrong for a greeting CLI and right for what Gas City is actually for: steps
+that are real units of engineering work, fan-outs of twenty tasks instead of
+three, and runs that happen *outside your session* — you sling the work and
+leave, so nobody is watching a spinner. This tutorial shrinks the app to
+make the machinery watchable in one sitting; the overhead dominating the
+work is the cost of that choice, not the steady state.
+
 Look at `gc session list`'s `WORKDIR` column while the fleet runs: each
 session works in its own isolated checkout under the rig, named for the step
 bead it's executing — completed work merges back to the rig's branch when
