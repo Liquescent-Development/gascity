@@ -143,8 +143,12 @@ Note the output: `Created <bead-id>` — copy that ID. Now watch it three ways:
 ```bash
 gc bd show <bead-id> --watch      # the bead's live status: open → in_progress → closed
 gc session list                   # a session spun up for greetbot/claude
-gc session peek greetbot/claude   # the agent's actual terminal, last few lines
+gc session peek greetbot/claude-1 # the agent's actual terminal, last few lines
 ```
+
+(Sessions are numbered instances of the agent — `greetbot/claude-1` — since
+one agent definition can back several sessions. Peek any `TARGET` or `ID`
+value that `gc session list` shows.)
 
 (`--watch` streams forever by design — when the status shows `CLOSED`, the
 agent is done; press Ctrl-C to move on.)
@@ -323,9 +327,15 @@ once** and the pool scales to meet them. Watch from several angles:
 ```bash
 gc session list        # run repeatedly: 1 worker session → then 3, concurrently
 gc bd list             # step beads: in_progress in parallel, blocked ones invisible-to-agents
-gc bd show <root-id> --watch    # root bead from the sling output; closes when all steps do
-gc session peek greetbot/worker # what a worker is typing right now
+gc bd show <root-id> --watch      # root bead from the sling output; closes when all steps do
+gc session peek greetbot/worker-1 # what a worker is typing right now (any TARGET from session list)
 ```
+
+Look at `gc session list`'s `WORKDIR` column while the fleet runs: each
+session works in its own isolated checkout under the rig, named for the step
+bead it's executing — completed work merges back to the rig's branch when
+the step closes. That isolation is why three agents can commit concurrently
+without trampling each other.
 
 In the second terminal, `gc events --follow` narrates everything:
 `bead.created` for each step, sessions waking, `bead.closed` as steps finish.
@@ -336,7 +346,15 @@ Want to look over an agent's shoulder in full? Sessions are real tmux
 sessions:
 
 ```bash
-gc session attach greetbot/worker    # detach with Ctrl-b then d — never Ctrl-c
+gc session attach greetbot/worker-1  # detach with Ctrl-b then d — never Ctrl-c
+```
+
+**Don't move on until the root bead is CLOSED** — the full run typically
+takes several minutes. Either sit on `gc bd show <root-id> --watch` until
+the status flips, or use a blocking wait:
+
+```bash
+until gc bd show <root-id> | head -1 | grep -q CLOSED; do sleep 10; done; echo "workflow done"
 ```
 
 > ✅ **Checkpoint:** at peak you saw **multiple sessions working

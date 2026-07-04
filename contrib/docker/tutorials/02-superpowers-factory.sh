@@ -100,6 +100,11 @@ run "cd '$RIG' && gc bd list | head -30"
 run "cd '$RIG' && git branch -a"
 say "Cycle these (and the dashboard at http://localhost:8372/) until the" \
     "workflow closes. This can take a while — a whole methodology is running."
+say "Step 5 only makes sense once the factory finishes. This wait blocks" \
+    "until your bead closes (expect tens of minutes for a full build)." \
+    "Ctrl-C returns to the tutorial if you'd rather keep watching the" \
+    "phases and re-run the runner later."
+watch "until gc bd show $BEAD | head -1 | grep -q CLOSED; do sleep 15; done; echo '=== $BEAD is CLOSED — the factory is done ==='"
 pause
 
 heading "Step 5 — Inspect the factory's output"

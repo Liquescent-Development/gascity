@@ -64,7 +64,9 @@ say "The watch below streams the bead live and never exits on its own —" \
     "return to the tutorial."
 watch "gc bd show $BEAD --watch"
 run "gc session list"
-run "gc session peek greetbot/claude || true"
+say "Sessions are numbered instances of the agent (greetbot/claude-1) —" \
+    "peek any TARGET or ID from the list above."
+run "gc session peek greetbot/claude-1 || true"
 say "When the bead closes: the task was durable state in a store, the" \
     "session observable from outside. Had the agent crashed, the bead would" \
     "have stayed open for the next one."
@@ -194,10 +196,19 @@ say "scaffold runs first; the instant it closes, THREE steps become ready at" \
     "stream forever; Ctrl-C returns to the tutorial:"
 watch "gc bd show $ROOT --watch"
 run "gc session list"
+say "Note the WORKDIR column: each session works in its own isolated" \
+    "checkout under the rig, named for its step bead — completed work merges" \
+    "back when the step closes. That's why three agents can commit" \
+    "concurrently without trampling each other."
 run "cd '$RIG' && gc bd list | head -30"
-run "gc session peek greetbot/worker || true"
+run "gc session peek greetbot/worker-1 || true"
 say "To look over an agent's shoulder in full: gc session attach" \
-    "greetbot/worker (detach with Ctrl-b then d — never Ctrl-c)."
+    "greetbot/worker-1 (detach with Ctrl-b then d — never Ctrl-c)."
+say "Step 8 only makes sense once the whole workflow is done. This wait" \
+    "blocks until the root bead closes — typically several minutes. Ctrl-C" \
+    "returns to the tutorial if you'd rather keep exploring the views above" \
+    "and re-run the runner later."
+watch "until gc bd show $ROOT | head -1 | grep -q CLOSED; do sleep 10; done; echo '=== workflow root $ROOT is CLOSED ==='"
 pause
 
 heading "Step 8 — Inspect the result"
