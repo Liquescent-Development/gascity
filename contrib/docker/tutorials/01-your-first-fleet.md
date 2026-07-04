@@ -146,6 +146,9 @@ gc session list                   # a session spun up for greetbot/claude
 gc session peek greetbot/claude   # the agent's actual terminal, last few lines
 ```
 
+(`--watch` streams forever by design — when the status shows `CLOSED`, the
+agent is done; press Ctrl-C to move on.)
+
 This is the whole Claude Code experience, re-based on durable machinery: the
 task is a bead in a store, the session is observable from outside, and if the
 agent crashed mid-task the bead would stay open for the next agent. When the

@@ -71,8 +71,13 @@ pause
 heading "Step 3 — Run the factory"
 say "Give it a real feature. Create the work bead from the rig directory so" \
     "it lands in the rig's namespace; note the printed bead ID."
-run "cd '$RIG' && gc bd create 'Add a --shout flag to greetbot that uppercases the greeting and adds exclamation marks, with tests'"
-ask_value "Bead ID from the output above:" BEAD
+run_capture "cd '$RIG' && gc bd create 'Add a --shout flag to greetbot that uppercases the greeting and adds exclamation marks, with tests'"
+BEAD="$(printf '%s\n' "$RUN_OUTPUT" | sed -n 's/.*Created issue: \([A-Za-z0-9-]*\).*/\1/p' | head -1)"
+if [ -n "$BEAD" ]; then
+  say "Captured bead ID: $BEAD"
+else
+  ask_value "Bead ID from the output above:" BEAD
+fi
 say "artifact_root (the only required variable) is where the factory writes" \
     "its design, spec, plan, and reports inside the rig. Defaults: no human" \
     "gates, nothing pushed (push=false, open_pr=false)."
@@ -86,11 +91,12 @@ say "Same tools as Tutorial 1, bigger show. Second terminal for the stream:" \
     "gc events --follow. Phases to spot: brainstorming writes design + spec" \
     "into the artifact root (gates loop on failure) → plan + plan-review →" \
     "decompose into a convoy → implementers drain tasks with forced TDD" \
-    "order → double review fan-out loops to a 'done' verdict → finisher."
+    "order → double review fan-out loops to a 'done' verdict → finisher." \
+    "Watches stream forever; Ctrl-C returns to the tutorial."
 watch "gc bd show $BEAD --watch"
 run "gc session list"
 run "ls -R '$RIG/plans/shout-flag/build' 2>/dev/null || echo 'artifacts not written yet — check again in a bit'"
-run "gc bd list | head -30"
+run "cd '$RIG' && gc bd list | head -30"
 run "cd '$RIG' && git branch -a"
 say "Cycle these (and the dashboard at http://localhost:8372/) until the" \
     "workflow closes. This can take a while — a whole methodology is running."

@@ -26,26 +26,52 @@ pause() {
   read -rp "${DIM}[Enter to continue]${RESET} " _ </dev/tty
 }
 
-# run "command" — show a command, then Enter=run / s=skip / q=quit.
-# The command runs in the caller's shell state (cd persists via subshell? no:
-# we eval in-process so `cd` sticks for later steps).
-run() {
-  local cmd="$1"
-  printf '%s$ %s%s\n' "$GREEN" "$cmd" "$RESET"
+# _confirm_run — Enter=run (0) / s=skip (1) / q=quit (exits).
+_confirm_run() {
   local answer
   read -rp "${DIM}[Enter=run  s=skip  q=quit]${RESET} " answer </dev/tty
   case "$answer" in
     q) echo "Leaving the tutorial. Re-run this script to pick up where you left off."; exit 0 ;;
-    s) echo "${YELLOW}skipped${RESET}"; return 0 ;;
+    s) echo "${YELLOW}skipped${RESET}"; return 1 ;;
   esac
+  return 0
+}
+
+# _report_failure <status> — on non-zero, let the user continue or quit.
+_report_failure() {
+  local status="$1" answer
+  [ "$status" -eq 0 ] && return 0
+  printf '%scommand failed (exit %s)%s\n' "$YELLOW" "$status" "$RESET"
+  read -rp "${DIM}[Enter=continue the tutorial anyway  q=quit]${RESET} " answer </dev/tty
+  [ "$answer" = "q" ] && exit 1
+  return 0
+}
+
+# run "command" — show a command, then Enter=run / s=skip / q=quit.
+# Runs via eval in-process, so `cd` sticks for later steps.
+run() {
+  local cmd="$1"
+  printf '%s$ %s%s\n' "$GREEN" "$cmd" "$RESET"
+  _confirm_run || return 0
   local status=0
   eval "$cmd" || status=$?
-  if [ "$status" -ne 0 ]; then
-    printf '%scommand failed (exit %s)%s\n' "$YELLOW" "$status" "$RESET"
-    read -rp "${DIM}[Enter=continue the tutorial anyway  q=quit]${RESET} " answer </dev/tty
-    [ "$answer" = "q" ] && exit 1
-  fi
-  return 0
+  _report_failure "$status"
+}
+
+# run_capture "command" — like run, but also captures combined output into
+# RUN_OUTPUT (still displayed live) so callers can parse IDs out of it.
+# NOTE: runs in a subshell — a `cd` inside the command does NOT persist.
+# shellcheck disable=SC2034  # RUN_OUTPUT is read by the sourcing scripts
+RUN_OUTPUT=""
+run_capture() {
+  local cmd="$1"
+  RUN_OUTPUT=""
+  printf '%s$ %s%s\n' "$GREEN" "$cmd" "$RESET"
+  _confirm_run || return 0
+  local status=0
+  # shellcheck disable=SC2034  # RUN_OUTPUT is read by the sourcing scripts
+  RUN_OUTPUT="$(eval "$cmd" 2>&1 | tee /dev/tty)" || status=$?
+  _report_failure "$status"
 }
 
 # watch "command" — run a blocking observer (--watch/--follow/attach).

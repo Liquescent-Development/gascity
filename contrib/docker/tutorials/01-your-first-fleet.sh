@@ -51,9 +51,17 @@ pause
 heading "Step 3 — Sling one bead (the part you already know)"
 say "Sling = create a bead AND route it to an agent, one motion. First, the" \
     "familiar single-agent experience — this also proves auth works before" \
-    "the big fan-out. Note the bead ID the sling prints."
-run "cd '$RIG' && gc sling greetbot/claude 'Create a README.md for greetbot: a CLI that prints multilingual, time-of-day-aware greetings in an ASCII banner. Describe the planned modules: greetings.py, banner.py, cli.py. Commit it.'"
-ask_value "Bead ID from the output above (e.g. gr-abc):" BEAD
+    "the big fan-out."
+run_capture "cd '$RIG' && gc sling greetbot/claude 'Create a README.md for greetbot: a CLI that prints multilingual, time-of-day-aware greetings in an ASCII banner. Describe the planned modules: greetings.py, banner.py, cli.py. Commit it.'"
+BEAD="$(printf '%s\n' "$RUN_OUTPUT" | sed -n 's/^Created \([A-Za-z0-9-]*\).*/\1/p' | head -1)"
+if [ -n "$BEAD" ]; then
+  say "Captured bead ID: $BEAD"
+else
+  ask_value "Bead ID from the sling output above (e.g. gr-abc):" BEAD
+fi
+say "The watch below streams the bead live and never exits on its own —" \
+    "when the status line shows CLOSED, the agent is done: press Ctrl-C to" \
+    "return to the tutorial."
 watch "gc bd show $BEAD --watch"
 run "gc session list"
 run "gc session peek greetbot/claude || true"
@@ -170,17 +178,23 @@ heading "Step 6 — Light the fuse"
 say "Best watched from a second terminal running: gc events --follow" \
     "(docker compose exec gascity bash). Sling from the rig so the beads" \
     "land in the rig's namespace. Note the workflow root ID it prints."
-run "cd '$RIG' && gc sling greetbot/worker greetbot --formula --nudge"
-ask_value "Workflow root bead ID from the output above:" ROOT
+run_capture "cd '$RIG' && gc sling greetbot/worker greetbot --formula --nudge"
+ROOT="$(printf '%s\n' "$RUN_OUTPUT" | sed -n 's/^Started workflow \([A-Za-z0-9-]*\).*/\1/p' | head -1)"
+if [ -n "$ROOT" ]; then
+  say "Captured workflow root: $ROOT"
+else
+  ask_value "Workflow root bead ID from the sling output above:" ROOT
+fi
 pause
 
 heading "Step 7 — Watch the fan-out"
 say "scaffold runs first; the instant it closes, THREE steps become ready at" \
     "once and the pool scales to meet them. Cycle these views — and the" \
-    "dashboard at http://localhost:8372/ — until the root closes:"
+    "dashboard at http://localhost:8372/ — until the root closes. Watches" \
+    "stream forever; Ctrl-C returns to the tutorial:"
 watch "gc bd show $ROOT --watch"
 run "gc session list"
-run "gc bd list | head -30"
+run "cd '$RIG' && gc bd list | head -30"
 run "gc session peek greetbot/worker || true"
 say "To look over an agent's shoulder in full: gc session attach" \
     "greetbot/worker (detach with Ctrl-b then d — never Ctrl-c)."
