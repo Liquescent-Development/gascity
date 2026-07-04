@@ -425,3 +425,10 @@ plugin in Claude Code, you already know the methodology in question.
   reading a different store).
 - **Formula won't compile:** `gc formula show greetbot` reports the exact
   error; most common is a typo in a `needs` id.
+- **All work steps CLOSED but the root stays IN_PROGRESS:** the
+  `workflow-finalize` control bead isn't being dispatched. Check `gc bd
+  ready` — if a "Finalize workflow" bead sits there while `gc status` shows
+  the rig-scoped `core.control-dispatcher` stopped, dispatch it yourself
+  from the rig directory: `gc convoy control <finalize-bead-id>`. The root
+  closes immediately (`action=workflow-pass`); your code is already merged
+  regardless — finalize is bookkeeping, not work.

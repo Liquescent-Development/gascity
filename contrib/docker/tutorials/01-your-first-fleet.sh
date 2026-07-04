@@ -230,6 +230,10 @@ say "Step 8 only makes sense once the whole workflow is done. This wait" \
     "blocks until the root bead closes — typically several more minutes." \
     "Ctrl-C returns to the tutorial if you'd rather keep exploring the views" \
     "above and re-run the runner later."
+say "If every work step shows CLOSED in gc bd list but this wait never ends," \
+    "the finalize control bead is stuck (see Troubleshooting in the .md):" \
+    "Ctrl-C, run gc bd ready, and dispatch the 'Finalize workflow' bead" \
+    "yourself with: gc convoy control <finalize-bead-id>"
 watch "until gc bd show $ROOT | head -1 | grep -q CLOSED; do sleep 10; done; echo '=== workflow root $ROOT is CLOSED ==='"
 pause
 
