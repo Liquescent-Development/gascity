@@ -431,4 +431,6 @@ plugin in Claude Code, you already know the methodology in question.
   the rig-scoped `core.control-dispatcher` stopped, dispatch it yourself
   from the rig directory: `gc convoy control <finalize-bead-id>`. The root
   closes immediately (`action=workflow-pass`); your code is already merged
-  regardless — finalize is bookkeeping, not work.
+  regardless — finalize is bookkeeping, not work. (Known upstream bug:
+  gastownhall/gascity#3872, incident 2 — the city dispatcher's serve loop
+  can't see rig-store control beads.)
