@@ -1,0 +1,40 @@
+# Gas City tutorial environment: one container with gc, bd, dolt, tmux, and
+# Claude Code. Start it, enter it, and follow /opt/gascity-tutorials.
+#
+#   cd contrib/docker
+#   docker compose up -d --build
+#   docker compose exec gascity bash
+#
+# Authentication (see README.md "Authentication"). gc's readiness check
+# requires first-party Claude Code auth — an ANTHROPIC_API_KEY does NOT
+# satisfy it. Pick one:
+#   - run `claude` once inside the container and log in interactively;
+#     credentials persist in the gc-home volume, or
+#   - `claude setup-token` on your logged-in host, then
+#     export CLAUDE_CODE_OAUTH_TOKEN=<token> before `docker compose up`.
+services:
+  gascity:
+    build:
+      # Repo root: the image compiles gc from source and uses the pinned
+      # install scripts under .github/scripts/.
+      context: ../..
+      dockerfile: contrib/docker/Dockerfile
+    image: gascity-tutorial
+    container_name: gascity-tutorial
+    # Reap orphaned processes (tmux panes, dolt sql-server) cleanly.
+    init: true
+    stdin_open: true
+    tty: true
+    environment:
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-}
+    ports:
+      # Supervisor API + dashboard: http://localhost:8372/
+      - "127.0.0.1:8372:8372"
+    volumes:
+      # Whole home persists: cities (with their .beads/dolt data), rig
+      # working copies under ~/projects, ~/.gc supervisor state, and Claude
+      # credentials all survive container rebuilds.
+      - gc-home:/home/gcagent
+
+volumes:
+  gc-home:
